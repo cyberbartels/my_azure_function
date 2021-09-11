@@ -27,7 +27,7 @@ namespace de.cyberbartels.test
 
             string responseMessage = string.IsNullOrEmpty(query)
                 ? "This HTTP triggered function executed successfully. Pass a query in the query string or in the request body for a personalized response."
-                : $"No answer to the query query \"{query}?\".";
+                : $"No answer to the query query \"{query}?\" available here.";
 
             return new OkObjectResult(responseMessage);
         }
