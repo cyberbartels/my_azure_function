@@ -63,7 +63,7 @@ resource "azurerm_storage_account" "funcy_storage" {
 
 # APPLICATION INSIGHTS
 resource "azurerm_log_analytics_workspace" "funcy_log_analytics_workspace" {
-  name                = local.appi_name
+  name                = local.workspace_name
   resource_group_name = var.target_resource_group_name
   location            = var.default_location
   sku                 = "PerGB2018"
@@ -71,7 +71,7 @@ resource "azurerm_log_analytics_workspace" "funcy_log_analytics_workspace" {
 }
 
 resource "azurerm_application_insights" "funcy_application_insights" {
-  name                = local.workspace_name
+  name                = local.appi_name
   resource_group_name = var.target_resource_group_name
   location            = var.default_location
   workspace_id        = azurerm_log_analytics_workspace.funcy_log_analytics_workspace.id
