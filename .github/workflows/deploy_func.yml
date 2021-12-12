@@ -75,6 +75,7 @@ jobs:
       #     ARM_CLIENT_SECRET: ${{ steps.readPipelineSecretsAction.outputs.tf-contributor-secret }} 
   build-and-deploy:
     runs-on: ubuntu-latest
+    needs: create-function-app
     environment: dev
     steps:
     - name: 'Checkout GitHub Action'
