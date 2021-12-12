@@ -11,7 +11,7 @@ env:
   DOTNET_VERSION: '3.1.x'              # set this to the dotnet version to use
   target_subscription_id: 3ddd746b-b77e-4175-9d3d-a02a9e6288a5
   target_resource_group_name: rg-app-dev
-  function_name: funcy-tf-function
+  function_name: funcytffunction
   default_location: germanywestcentral
 
 jobs:
