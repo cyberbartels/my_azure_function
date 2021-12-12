@@ -41,7 +41,7 @@ jobs:
         working-directory: terraform
         env:
           ARM_TENANT_ID:     d6db5a16-62fc-42d1-9986-c7b8982df37e 
-          ARM_CLIENT_ID:     0e3a3135-4a76-4096-b798-771e28ba5b72 
+          ARM_CLIENT_ID:     b650f007-9ad2-4426-8e24-8293ca449eaf
           ARM_CLIENT_SECRET: ${{ steps.readPipelineSecretsAction.outputs.tf-contributor-secret }} 
       - name: Terraform Validate 
         run: |
@@ -53,7 +53,7 @@ jobs:
         working-directory: terraform
         env:
           ARM_TENANT_ID:     d6db5a16-62fc-42d1-9986-c7b8982df37e 
-          ARM_CLIENT_ID:     0e3a3135-4a76-4096-b798-771e28ba5b72 
+          ARM_CLIENT_ID:     b650f007-9ad2-4426-8e24-8293ca449eaf 
           ARM_CLIENT_SECRET: ${{ steps.readPipelineSecretsAction.outputs.tf-contributor-secret }} 
           TF_VAR_target_subscription_id:     ${{ env.target_subscription_id }}
           TF_VAR_target_resource_group_name: ${{ env.target_resource_group_name }}
@@ -71,7 +71,7 @@ jobs:
       #   working-directory: terraform
       #   env:
       #     ARM_TENANT_ID:     d6db5a16-62fc-42d1-9986-c7b8982df37e 
-      #     ARM_CLIENT_ID:     0e3a3135-4a76-4096-b798-771e28ba5b72 
+      #     ARM_CLIENT_ID:     b650f007-9ad2-4426-8e24-8293ca449eaf 
       #     ARM_CLIENT_SECRET: ${{ steps.readPipelineSecretsAction.outputs.tf-contributor-secret }} 
   build-and-deploy:
     runs-on: ubuntu-latest
