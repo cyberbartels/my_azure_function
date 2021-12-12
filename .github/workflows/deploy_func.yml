@@ -65,14 +65,15 @@ jobs:
           name: tf-plan
           path: |
             terraform/deploy_${{ env.AZURE_FUNCTIONAPP_NAME }}_${{ github.run_number }}.tfplan
-      # - name: Terraform Apply 
-      #   run: |
-      #     terraform apply -auto-approve deploy_${{ env.AZURE_FUNCTIONAPP_NAME }}_${{ github.run_number }}.tfplan
-      #   working-directory: terraform
-      #   env:
-      #     ARM_TENANT_ID:     d6db5a16-62fc-42d1-9986-c7b8982df37e 
-      #     ARM_CLIENT_ID:     b650f007-9ad2-4426-8e24-8293ca449eaf 
-      #     ARM_CLIENT_SECRET: ${{ steps.readPipelineSecretsAction.outputs.tf-contributor-secret }} 
+      - name: Terraform Apply 
+        run: |
+          terraform apply -auto-approve deploy_${{ env.AZURE_FUNCTIONAPP_NAME }}_${{ github.run_number }}.tfplan
+        working-directory: terraform
+        env:
+          ARM_TENANT_ID:     d6db5a16-62fc-42d1-9986-c7b8982df37e 
+          ARM_CLIENT_ID:     b650f007-9ad2-4426-8e24-8293ca449eaf 
+          ARM_CLIENT_SECRET: ${{ steps.readPipelineSecretsAction.outputs.tf-contributor-secret }} 
+  
   build-and-deploy:
     runs-on: ubuntu-latest
     needs: create-function-app
@@ -80,12 +81,33 @@ jobs:
     steps:
     - name: 'Checkout GitHub Action'
       uses: actions/checkout@master
-
+    
+    - uses: Azure/login@v1
+      with:
+        creds: ${{ secrets.PIPELINE_AZURE_CREDENTIALS }} 
+    - uses: Azure/get-keyvault-secrets@v1
+      with:
+        keyvault: kv-dev-mba
+        secrets: 'tf-contributor-json'
+      id: readPipelineSecretsAction
+    
+    - name: Get WebApp/FunctionApp publish profile
+      id: webapp
+      uses: aliencube/publish-profile-actions@v1
+      env:
+        AZURE_CREDENTIALS: ${{ steps.readPipelineSecretsAction.outputs.tf-contributor-json }}
+      with:
+        resourceGroupName: ${{ env.target_resource_group_name }}
+        appName: ${{ env.function_name }}
+    - name: Show Profile
+      shell: bash
+      run: |
+        echo "WebApp: ${{ steps.webapp.outputs.profile }}"
+    
     - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-
     - name: 'Resolve Project Dependencies Using Dotnet'
       shell: bash
       run: |
@@ -98,4 +120,4 @@ jobs:
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
         package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
-        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+        publish-profile: ${{ steps.webapp.outputs.profile }}
