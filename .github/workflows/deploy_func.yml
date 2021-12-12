@@ -36,7 +36,7 @@ jobs:
               -backend-config="subscription_id=3ddd746b-b77e-4175-9d3d-a02a9e6288a5" \
               -backend-config="resource_group_name=rg-data" \
               -backend-config="storage_account_name=stiacdev" \
-              -backend-config="tf-state" \
+              -backend-config="container_name=tf-state" \
               -backend-config="key=${{ env.AZURE_FUNCTIONAPP_NAME }}/default.tfstate"
         working-directory: terraform
         env:
