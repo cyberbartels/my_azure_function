@@ -9,7 +9,70 @@ env:
   AZURE_FUNCTIONAPP_NAME: func-fun  # set this to your application's name
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'    # set this to the path to your web app project, defaults to the repository root
   DOTNET_VERSION: '3.1.x'              # set this to the dotnet version to use
+  target_subscription_id: 3ddd746b-b77e-4175-9d3d-a02a9e6288a5
+  target_resource_group_name: rg-app-dev
+  function_name: funcy-tf-function
+  default_location: germanywestcentral
 
+jobs:
+  create-function-app:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v2
+      - uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.PIPELINE_AZURE_CREDENTIALS }} 
+      - uses: Azure/get-keyvault-secrets@v1
+        with:
+          keyvault: kv-dev-mba
+          secrets: 'tf-contributor-secret'
+        id: readPipelineSecretsAction
+      - name: Terraform version
+        run: terraform version
+      - name: Terraform init
+        run: |
+          terraform init \
+              -backend-config="subscription_id=3ddd746b-b77e-4175-9d3d-a02a9e6288a5" \
+              -backend-config="resource_group_name=rg-data" \
+              -backend-config="storage_account_name=stiacdev" \
+              -backend-config="tf-state" \
+              -backend-config="key=${{ env.AZURE_FUNCTIONAPP_NAME }}/default.tfstate"
+        working-directory: terraform
+        env:
+          ARM_TENANT_ID:     d6db5a16-62fc-42d1-9986-c7b8982df37e 
+          ARM_CLIENT_ID:     0e3a3135-4a76-4096-b798-771e28ba5b72 
+          ARM_CLIENT_SECRET: ${{ steps.readPipelineSecretsAction.outputs.tf-contributor-secret }} 
+      - name: Terraform Validate 
+        run: |
+          terraform validate
+        working-directory: terraform
+      - name: Terraform Plan
+        run: |
+          terraform plan -out=deploy_${{ env.AZURE_FUNCTIONAPP_NAME }}_${{ github.run_number }}.tfplan
+        working-directory: terraform
+        env:
+          ARM_TENANT_ID:     d6db5a16-62fc-42d1-9986-c7b8982df37e 
+          ARM_CLIENT_ID:     0e3a3135-4a76-4096-b798-771e28ba5b72 
+          ARM_CLIENT_SECRET: ${{ steps.readPipelineSecretsAction.outputs.tf-contributor-secret }} 
+          TF_VAR_target_subscription_id:     ${{ env.target_subscription_id }}
+          TF_VAR_target_resource_group_name: ${{ env.target_resource_group_name }}
+          TF_VAR_function_name:              ${{ env.function_name }}
+          TF_VAR_default_location:           ${{ env.default_location }}
+      - name: Archive terraform plan
+        uses: actions/upload-artifact@v2
+        with:
+          name: tf-plan
+          path: |
+            terraform/deploy_${{ env.AZURE_FUNCTIONAPP_NAME }}_${{ github.run_number }}.tfplan
+      # - name: Terraform Apply 
+      #   run: |
+      #     terraform apply -auto-approve deploy_${{ env.AZURE_FUNCTIONAPP_NAME }}_${{ github.run_number }}.tfplan
+      #   working-directory: terraform
+      #   env:
+      #     ARM_TENANT_ID:     d6db5a16-62fc-42d1-9986-c7b8982df37e 
+      #     ARM_CLIENT_ID:     0e3a3135-4a76-4096-b798-771e28ba5b72 
+      #     ARM_CLIENT_SECRET: ${{ steps.readPipelineSecretsAction.outputs.tf-contributor-secret }} 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
